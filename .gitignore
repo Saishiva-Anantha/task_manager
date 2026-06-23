@@ -1,0 +1,24 @@
+# Python / Django cache and virtual environment
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/venv/
+**/.venv/
+**/db.sqlite3
+**/.env
+
+# React / Frontend dependencies and builds
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/*.local
+
+# Editor files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
