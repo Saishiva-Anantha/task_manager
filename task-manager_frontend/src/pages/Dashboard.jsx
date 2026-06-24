@@ -1,5 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import API from '../api/axios'
+import Calendar from '../components/Calendar'
+import AnalyticsDashboard from '../components/AnalyticsDashboard'
+import VoiceCreator from '../components/VoiceCreator'
+import Timeline from '../components/Timeline'
+import Collaboration from '../components/Collaboration'
 
 function Dashboard({ setUsername }) {
     const [tasks, setTasks] = useState([])
@@ -12,6 +17,32 @@ function Dashboard({ setUsername }) {
 
     const [displayName, setDisplayName] = useState(localStorage.getItem('username') || '')
     const [activeTile, setActiveTile] = useState('all') // tracks which stat tile is active
+
+    // Tabs Navigation
+    const [activeTab, setActiveTab] = useState('tasks')
+
+    // AI Task Generator State
+    const [aiPrompt, setAiPrompt] = useState('')
+    const [generatingAI, setGeneratingAI] = useState(false)
+    const [aiResult, setAiResult] = useState('')
+
+    const handleAIGenerate = async (e) => {
+        e.preventDefault()
+        if (!aiPrompt.trim()) return
+        setGeneratingAI(true)
+        setAiResult('')
+        try {
+            const res = await API.post('/ai-generate/', { prompt: aiPrompt })
+            setAiResult(res.data.message || 'Tasks generated successfully!')
+            setAiPrompt('')
+            fetchData() // Refresh list
+        } catch (err) {
+            console.error(err)
+            setAiResult('Failed to generate tasks.')
+        } finally {
+            setGeneratingAI(false)
+        }
+    }
 
     // Filters and Sorting
     const [searchTerm, setSearchTerm] = useState('')
@@ -202,196 +233,302 @@ function Dashboard({ setUsername }) {
                 <p style={{ color: 'var(--text-muted)', marginBottom: 0, fontSize: '0.95rem' }}>Here's what's on your plate today.</p>
             </div>
 
-            {/* Clickable Stat Tiles */}
-            <div className="row mb-4">
-                {[
-                    { id: 'all',          label: 'Total Tasks',   value: stats.total,        color: 'var(--primary)' },
-                    { id: 'completed',    label: 'Completed',     value: stats.completed,    color: '#10b981' },
-                    { id: 'pending',      label: 'Pending',       value: stats.pending,      color: '#f59e0b' },
-                    { id: 'in_progress',  label: 'In Progress',   value: stats.inProgress,   color: '#f59e0b' },
-                    { id: 'high',         label: 'High Priority', value: stats.highPriority, color: '#ef4444' },
-                ].map(s => {
-                    const isActive = activeTile === s.id
-                    return (
-                        <div className="col-md-3 col-sm-6 mb-3" key={s.label}>
-                            <div
-                                className="glass-card p-3 text-center"
+            {/* Main Tabs Navigation */}
+            <div className="mb-4">
+                <ul className="nav nav-pills glass-card p-2 gap-2" style={{ border: '1px solid var(--card-border)' }}>
+                    {[
+                        { id: 'tasks',     label: '📋 Tasks' },
+                        { id: 'calendar',  label: '📅 Calendar' },
+                        { id: 'analytics', label: '📊 Analytics' },
+                        { id: 'collab',    label: '👥 Teams' },
+                        { id: 'timeline',  label: '⚡ Activity Log' }
+                    ].map(tab => (
+                        <li className="nav-item" key={tab.id}>
+                            <button 
+                                className={`nav-link px-4 py-2 border-0 rounded fw-semibold ${activeTab === tab.id ? 'active btn-primary' : 'bg-transparent text-secondary'}`}
                                 onClick={() => {
-                                    setActiveTile(s.id)
-                                    if (s.id === 'all')         { setFilterStatus('all');       setFilterCategory('all') }
-                                    else if (s.id === 'completed')  setFilterStatus('completed')
-                                    else if (s.id === 'pending')    setFilterStatus('pending')
-                                    else if (s.id === 'in_progress')setFilterStatus('pending')
-                                    else if (s.id === 'high')   { setFilterStatus('pending');   setFilterCategory('all') }
+                                    setActiveTab(tab.id)
+                                    setError('')
+                                    setSuccess && setSuccess('')
                                 }}
-                                style={{
-                                    cursor: 'pointer',
-                                    border: isActive ? `2px solid ${s.color}` : '1px solid var(--card-border)',
-                                    boxShadow: isActive ? `0 0 18px ${s.color}55` : undefined,
-                                    transition: 'all 0.2s ease',
-                                }}
-                            >
-                                <h3 className="fw-bold mb-1" style={{ color: s.color, fontSize: '2rem' }}>{s.value}</h3>
-                                <span style={{ color: 'var(--text-color)', opacity: 0.75, fontSize: '0.82rem', fontWeight: 500 }}>{s.label}</span>
-                            </div>
-                        </div>
-                    )
-                })}
+                                style={{ transition: 'all 0.2s' }}>
+                                {tab.label}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
             </div>
 
-            {/* Toolbar */}
-            <div className="glass-card p-3 mb-4 d-flex flex-wrap gap-3 align-items-center justify-content-between">
-                <div className="d-flex flex-wrap gap-2 flex-grow-1">
-                    <input 
-                        type="text" 
-                        className="form-control" 
-                        placeholder="Search tasks..." 
-                        style={{maxWidth: '300px'}}
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                    <select className="form-select" style={{maxWidth: '150px'}} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                        <option value="all">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                    <select className="form-select" style={{maxWidth: '150px'}} value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
-                        <option value="all">All Categories</option>
-                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                    <select className="form-select" style={{maxWidth: '160px'}} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                        <option value="created_desc">Newest First</option>
-                        <option value="due_date">Due Date</option>
-                        <option value="priority">Priority</option>
-                    </select>
-                </div>
-                <div className="d-flex gap-2">
-                    <button className="btn btn-outline-primary" onClick={() => setShowCategoryModal(true)}>
-                        + Category
-                    </button>
-                    <button className="btn btn-primary" onClick={() => openTaskModal()}>
-                        + New Task
-                    </button>
-                </div>
-            </div>
-
-            {/* Task Grid */}
-            {(() => {
-                const pending   = filteredAndSortedTasks.filter(t => !t.completed)
-                const completed = filteredAndSortedTasks.filter(t => t.completed)
-
-                const TaskCard = ({ task, isCompletedSection }) => {
-                    const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !task.completed
-                    return (
-                        <div className="col-md-6 col-lg-4">
-                            <div
-                                className={`glass-card h-100 p-3 d-flex flex-column ${isOverdue ? 'border-danger' : ''}`}
-                                style={{ opacity: isCompletedSection ? 0.75 : 1, borderWidth: isOverdue ? 2 : 1 }}
-                            >
-                                {/* Title + Badge */}
-                                <div className="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 className="fw-bold mb-0" style={{
-                                        color: isCompletedSection ? 'var(--text-muted)' : 'var(--text-color)',
-                                        textDecoration: isCompletedSection ? 'line-through' : 'none',
-                                        fontSize: '1rem'
-                                    }}>
-                                        {task.title}
-                                    </h5>
-                                    <span className={`badge rounded-pill badge-${task.priority} text-capitalize ms-2`} style={{ flexShrink: 0 }}>
-                                        {task.priority}
-                                    </span>
-                                </div>
-
-                                {/* Description */}
-                                <p className="small mb-3 flex-grow-1" style={{ color: 'var(--text-color)', opacity: 0.7, lineHeight: 1.5 }}>
-                                    {task.description}
-                                </p>
-
-                                {/* Meta */}
-                                <div className="d-flex flex-wrap gap-2 mb-3">
-                                    {task.category_name && (
-                                        <span style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '999px', padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
-                                            📁 {task.category_name}
-                                        </span>
-                                    )}
-                                    {task.due_date && (
-                                        <span style={{ background: isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.12)', color: isOverdue ? '#ef4444' : 'var(--primary)', border: `1px solid ${isOverdue ? '#ef4444' : 'var(--primary)'}`, borderRadius: '999px', padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
-                                            📅 {task.due_date} {isOverdue ? '⚠ Overdue' : ''}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Buttons */}
-                                <div className="d-flex gap-2 mt-auto pt-3" style={{ borderTop: '1px solid var(--card-border)' }}>
-                                    {isCompletedSection ? (
-                                        /* Completed row: small ↩ Undo + Edit + Delete */
-                                        <>
-                                            <button
-                                                className="btn btn-sm fw-bold"
-                                                style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid #10b981', borderRadius: '8px', whiteSpace: 'nowrap' }}
-                                                onClick={() => toggleComplete(task)}
-                                            >
-                                                ↩ Undo
-                                            </button>
-                                            <button className="btn btn-sm fw-semibold flex-grow-1" style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px' }} onClick={() => openTaskModal(task)}>Edit</button>
-                                            <button className="btn btn-sm fw-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '8px' }} onClick={() => deleteTask(task.id)}>Delete</button>
-                                        </>
-                                    ) : (
-                                        /* Pending row: big Complete + Edit + Delete */
-                                        <>
-                                            <button
-                                                className="btn btn-sm fw-bold flex-grow-1"
-                                                style={{ background: 'var(--primary-gradient)', border: 'none', color: 'var(--primary-text)', borderRadius: '8px', boxShadow: '0 4px 12px var(--primary-glow)' }}
-                                                onClick={() => toggleComplete(task)}
-                                            >
-                                                ✓ Complete
-                                            </button>
-                                            <button className="btn btn-sm fw-semibold" style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px' }} onClick={() => openTaskModal(task)}>Edit</button>
-                                            <button className="btn btn-sm fw-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '8px' }} onClick={() => deleteTask(task.id)}>Delete</button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
+            {activeTab === 'tasks' && (
+                <>
+                    {/* Voice Creator & AI Generator */}
+                    <div className="row g-3 mb-4">
+                        <div className="col-lg-6">
+                            <VoiceCreator 
+                                onTaskCreated={async (voiceDetails) => {
+                                    try {
+                                        await API.post('/tasks/', {
+                                            title: voiceDetails.title,
+                                            priority: voiceDetails.priority,
+                                            due_date: voiceDetails.due_date,
+                                            completed: false
+                                        })
+                                        fetchData()
+                                    } catch (err) {
+                                        console.error('Voice task creation failed:', err)
+                                    }
+                                }} 
+                            />
                         </div>
-                    )
-                }
-
-                return (
-                    <>
-                        {/* Pending Tasks */}
-                        {pending.length === 0 && completed.length === 0 ? (
-                            <div className="glass-card p-5 text-center">
-                                <h5 style={{ color: 'var(--text-color)' }}>No tasks found</h5>
-                                <p style={{ color: 'var(--text-color)', opacity: 0.6 }}>Try adjusting your filters or create a new task.</p>
-                            </div>
-                        ) : (
-                            <>
-                                {pending.length > 0 && (
-                                    <div className="row g-4 mb-4">
-                                        {pending.map(task => <TaskCard key={task.id} task={task} isCompletedSection={false} />)}
+                        <div className="col-lg-6">
+                            <div className="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <h6 className="fw-bold mb-1 text-primary">🤖 AI Task Generator</h6>
+                                    <p className="small text-muted mb-3">Enter a goal (e.g., "Prepare for Python Interview") and generate a checklist of subtasks instantly.</p>
+                                    <form onSubmit={handleAIGenerate}>
+                                        <div className="input-group">
+                                            <input 
+                                                type="text" 
+                                                className="form-control" 
+                                                placeholder="e.g. Learn Django Basics" 
+                                                value={aiPrompt}
+                                                onChange={e => setAiPrompt(e.target.value)}
+                                                required
+                                                disabled={generatingAI}
+                                            />
+                                            <button className="btn btn-primary" type="submit" disabled={generatingAI}>
+                                                {generatingAI ? 'Generating...' : 'Generate'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                {aiResult && (
+                                    <div className="small text-success fw-medium mt-2">
+                                        ✓ {aiResult}
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
 
-                                {/* Completed Tasks Section */}
-                                {completed.length > 0 && (
-                                    <div className="mt-2">
-                                        <div className="d-flex align-items-center gap-3 mb-3">
-                                            <div style={{ height: 1, flex: 1, background: 'var(--card-border)' }} />
-                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                                ✅ COMPLETED ({completed.length})
+                    {/* Clickable Stat Tiles */}
+                    <div className="row mb-4">
+                        {[
+                            { id: 'all',          label: 'Total Tasks',   value: stats.total,        color: 'var(--primary)' },
+                            { id: 'completed',    label: 'Completed',     value: stats.completed,    color: '#10b981' },
+                            { id: 'pending',      label: 'Pending',       value: stats.pending,      color: '#f59e0b' },
+                            { id: 'in_progress',  label: 'In Progress',   value: stats.inProgress,   color: '#f59e0b' },
+                            { id: 'high',         label: 'High Priority', value: stats.highPriority, color: '#ef4444' },
+                        ].map(s => {
+                            const isActive = activeTile === s.id
+                            return (
+                                <div className="col-md-3 col-sm-6 mb-3" key={s.label}>
+                                    <div
+                                        className="glass-card p-3 text-center"
+                                        onClick={() => {
+                                            setActiveTile(s.id)
+                                            if (s.id === 'all')         { setFilterStatus('all');       setFilterCategory('all') }
+                                            else if (s.id === 'completed')  setFilterStatus('completed')
+                                            else if (s.id === 'pending')    setFilterStatus('pending')
+                                            else if (s.id === 'in_progress')setFilterStatus('pending')
+                                            else if (s.id === 'high')   { setFilterStatus('pending');   setFilterCategory('all') }
+                                        }}
+                                        style={{
+                                            cursor: 'pointer',
+                                            border: isActive ? `2px solid ${s.color}` : '1px solid var(--card-border)',
+                                            boxShadow: isActive ? `0 0 18px ${s.color}55` : undefined,
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        <h3 className="fw-bold mb-1" style={{ color: s.color, fontSize: '2rem' }}>{s.value}</h3>
+                                        <span style={{ color: 'var(--text-color)', opacity: 0.75, fontSize: '0.82rem', fontWeight: 500 }}>{s.label}</span>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+
+                    {/* Toolbar */}
+                    <div className="glass-card p-3 mb-4 d-flex flex-wrap gap-3 align-items-center justify-content-between">
+                        <div className="d-flex flex-wrap gap-2 flex-grow-1">
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                placeholder="Search tasks..." 
+                                style={{maxWidth: '300px'}}
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                            <select className="form-select" style={{maxWidth: '150px'}} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <select className="form-select" style={{maxWidth: '150px'}} value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+                                <option value="all">All Categories</option>
+                                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                            <select className="form-select" style={{maxWidth: '160px'}} value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                                <option value="created_desc">Newest First</option>
+                                <option value="due_date">Due Date</option>
+                                <option value="priority">Priority</option>
+                            </select>
+                        </div>
+                        <div className="d-flex gap-2">
+                            <button className="btn btn-outline-primary" onClick={() => setShowCategoryModal(true)}>
+                                + Category
+                            </button>
+                            <button className="btn btn-primary" onClick={() => openTaskModal()}>
+                                + New Task
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Task Grid */}
+                    {(() => {
+                        const pending   = filteredAndSortedTasks.filter(t => !t.completed)
+                        const completed = filteredAndSortedTasks.filter(t => t.completed)
+
+                        const TaskCard = ({ task, isCompletedSection }) => {
+                            const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !task.completed
+                            return (
+                                <div className="col-md-6 col-lg-4">
+                                    <div
+                                        className={`glass-card h-100 p-3 d-flex flex-column ${isOverdue ? 'border-danger' : ''}`}
+                                        style={{ opacity: isCompletedSection ? 0.75 : 1, borderWidth: isOverdue ? 2 : 1 }}
+                                    >
+                                        {/* Title + Badge */}
+                                        <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 className="fw-bold mb-0" style={{
+                                                color: isCompletedSection ? 'var(--text-muted)' : 'var(--text-color)',
+                                                textDecoration: isCompletedSection ? 'line-through' : 'none',
+                                                fontSize: '1rem'
+                                            }}>
+                                                {task.title}
+                                            </h5>
+                                            <span className={`badge rounded-pill badge-${task.priority} text-capitalize ms-2`} style={{ flexShrink: 0 }}>
+                                                {task.priority}
                                             </span>
-                                            <div style={{ height: 1, flex: 1, background: 'var(--card-border)' }} />
                                         </div>
-                                        <div className="row g-4">
-                                            {completed.map(task => <TaskCard key={task.id} task={task} isCompletedSection={true} />)}
+
+                                        {/* Description */}
+                                        <p className="small mb-3 flex-grow-1" style={{ color: 'var(--text-color)', opacity: 0.7, lineHeight: 1.5 }}>
+                                            {task.description}
+                                        </p>
+
+                                        {/* Meta */}
+                                        <div className="d-flex flex-wrap gap-2 mb-3">
+                                            {task.category_name && (
+                                                <span style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '999px', padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
+                                                    📁 {task.category_name}
+                                                </span>
+                                            )}
+                                            {task.project_name && (
+                                                <span style={{ background: 'rgba(147, 51, 234, 0.12)', color: '#9333ea', border: '1px solid #9333ea', borderRadius: '999px', padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
+                                                    👥 {task.project_name}
+                                                </span>
+                                            )}
+                                            {task.due_date && (
+                                                <span style={{ background: isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.12)', color: isOverdue ? '#ef4444' : 'var(--primary)', border: `1px solid ${isOverdue ? '#ef4444' : 'var(--primary)'}`, borderRadius: '999px', padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
+                                                    📅 {task.due_date} {isOverdue ? '⚠ Overdue' : ''}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Buttons */}
+                                        <div className="d-flex gap-2 mt-auto pt-3" style={{ borderTop: '1px solid var(--card-border)' }}>
+                                            {isCompletedSection ? (
+                                                /* Completed row: Undo + Edit + Delete */
+                                                <>
+                                                    <button
+                                                        className="btn btn-sm fw-bold"
+                                                        style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid #10b981', borderRadius: '8px', whiteSpace: 'nowrap' }}
+                                                        onClick={() => toggleComplete(task)}
+                                                    >
+                                                        ↩ Undo
+                                                    </button>
+                                                    <button className="btn btn-sm fw-semibold flex-grow-1" style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px' }} onClick={() => openTaskModal(task)}>Edit</button>
+                                                    <button className="btn btn-sm fw-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '8px' }} onClick={() => deleteTask(task.id)}>Delete</button>
+                                                </>
+                                            ) : (
+                                                /* Pending row: Complete + Edit + Delete */
+                                                <>
+                                                    <button
+                                                        className="btn btn-sm fw-bold flex-grow-1"
+                                                        style={{ background: 'var(--primary-gradient)', border: 'none', color: 'var(--primary-text)', borderRadius: '8px', boxShadow: '0 4px 12px var(--primary-glow)' }}
+                                                        onClick={() => toggleComplete(task)}
+                                                    >
+                                                        ✓ Complete
+                                                    </button>
+                                                    <button className="btn btn-sm fw-semibold" style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: '8px' }} onClick={() => openTaskModal(task)}>Edit</button>
+                                                    <button className="btn btn-sm fw-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '8px' }} onClick={() => deleteTask(task.id)}>Delete</button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
+                                </div>
+                            )
+                        }
+
+                        return (
+                            <>
+                                {pending.length === 0 && completed.length === 0 ? (
+                                    <div className="glass-card p-5 text-center">
+                                        <h5 style={{ color: 'var(--text-color)' }}>No tasks found</h5>
+                                        <p style={{ color: 'var(--text-color)', opacity: 0.6 }}>Try adjusting your filters or create a new task.</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {pending.length > 0 && (
+                                            <div className="row g-4 mb-4">
+                                                {pending.map(task => <TaskCard key={task.id} task={task} isCompletedSection={false} />)}
+                                            </div>
+                                        )}
+
+                                        {completed.length > 0 && (
+                                            <div className="mt-2">
+                                                <div className="d-flex align-items-center gap-3 mb-3">
+                                                    <div style={{ height: 1, flex: 1, background: 'var(--card-border)' }} />
+                                                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                                        ✅ COMPLETED ({completed.length})
+                                                    </span>
+                                                    <div style={{ height: 1, flex: 1, background: 'var(--card-border)' }} />
+                                                </div>
+                                                <div className="row g-4">
+                                                    {completed.map(task => <TaskCard key={task.id} task={task} isCompletedSection={true} />)}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </>
-                        )}
-                    </>
-                )
-            })()}
+                        )
+                    })()}
+                </>
+            )}
+
+            {activeTab === 'calendar' && (
+                <Calendar 
+                    tasks={tasks} 
+                    onAddTask={(dueDate) => { 
+                        setTaskForm({
+                            title: '',
+                            description: '',
+                            priority: 'medium',
+                            due_date: dueDate,
+                            category: '',
+                            completed: false
+                        }); 
+                        setShowTaskModal(true); 
+                    }} 
+                />
+            )}
+
+            {activeTab === 'analytics' && <AnalyticsDashboard />}
+
+            {activeTab === 'collab' && <Collaboration onTaskCreated={fetchData} />}
+
+            {activeTab === 'timeline' && <Timeline />}
 
 
             {/* Task Modal Overlay */}
