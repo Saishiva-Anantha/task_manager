@@ -51,7 +51,7 @@ function SettingsPanel({ onClose }) {
         <div className="d-flex justify-content-between align-items-center p-4 border-bottom border-secondary border-opacity-25">
           <div>
             <h4 className="fw-bold mb-0">⚙️ Settings</h4>
-            <p className="text-muted small mb-0">Customize your ZenTask experience</p>
+            <p className="text-muted small mb-0">Customize your Anantha Task Manager experience</p>
           </div>
           <button className="btn-close" onClick={onClose} style={{ filter: mode === 'dark' ? 'invert(1)' : 'none' }}></button>
         </div>

@@ -33,7 +33,7 @@ function Login() {
                     <div className="col-md-5 col-lg-4">
                         <div className="glass-card p-5">
                             <div className="text-center mb-4">
-                                <h2 className="fw-bold text-primary mb-2">ZenTask</h2>
+                                <h2 className="fw-bold text-primary mb-2">Anantha Task Manager</h2>
                                 <p className="text-muted">Welcome back! Please login to your account.</p>
                             </div>
                             
@@ -69,6 +69,11 @@ function Login() {
                                     Don't have an account? <Link to="/register" className="text-primary text-decoration-none fw-medium">Register here</Link>
                                 </p>
                             </form>
+                            <hr className="my-4 border-secondary border-opacity-25" />
+                            <div className="text-center text-muted small">
+                                🛡️ Designed & Developed by <br />
+                                <strong className="text-primary">Sai Shiva Anantha</strong>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -530,6 +530,10 @@ function Dashboard({ setUsername }) {
 
             {activeTab === 'timeline' && <Timeline />}
 
+            {/* Footer Signature */}
+            <footer className="text-center mt-5 mb-4 text-muted small py-3 border-top border-secondary border-opacity-10">
+                🚀 Designed & Developed by <strong className="text-primary">Sai Shiva Anantha</strong> | Anantha Task Manager
+            </footer>
 
             {/* Task Modal Overlay */}
             {showTaskModal && (

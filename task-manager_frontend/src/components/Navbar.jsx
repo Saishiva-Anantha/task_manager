@@ -12,14 +12,18 @@ function Navbar({ username }) {
     <>
       <nav className="navbar glass-nav navbar-expand-lg py-3 mb-4">
         <div className="container">
-          {/* Brand */}
-          <Link
-            className="navbar-brand fw-bold fs-3"
-            to="/dashboard"
-            style={{ background: 'var(--primary-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-          >
-            ZenTask
-          </Link>
+          <div className="d-flex align-items-center">
+            <Link
+              className="navbar-brand fw-bold fs-3 mb-0"
+              to="/dashboard"
+              style={{ background: 'var(--primary-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+            >
+              Anantha Task Manager
+            </Link>
+            <span className="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 ms-2 d-none d-sm-inline-block" style={{ fontSize: '0.7rem', padding: '5px 10px' }}>
+              🚀 by Sai Shiva Anantha
+            </span>
+          </div>
 
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span className="navbar-toggler-icon"></span>

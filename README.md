@@ -1,6 +1,6 @@
-# ZenTask - Modern Task Manager with Real-time Email Verification
+# Anantha Task Manager - Modern Task Manager with Real-time Email Verification
 
-ZenTask is a premium, modern task management application featuring a glassmorphism design, category management, task prioritization, due dates, and a robust real-time email verification workflow during user registration.
+Anantha Task Manager is a premium, modern task management application featuring a glassmorphism design, category management, task prioritization, due dates, and a robust real-time email verification workflow during user registration.
 
 ---
 

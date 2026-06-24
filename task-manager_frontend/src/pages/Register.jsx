@@ -36,7 +36,7 @@ function Register() {
                         <div className="glass-card p-5">
                             <div className="text-center mb-4">
                                 <h2 className="fw-bold text-primary mb-2">Create Account</h2>
-                                <p className="text-muted">Join ZenTask to boost your productivity.</p>
+                                <p className="text-muted">Join Anantha Task Manager to boost your productivity.</p>
                             </div>
                             
                             {error   && <div className="alert alert-danger py-2">{error}</div>}
@@ -71,9 +71,14 @@ function Register() {
                                     {loading ? 'Creating...' : 'Register'}
                                 </button>
                                 <p className="text-center mb-0">
-                                    Already have an account? <Link to="/login" className="text-primary text-decoration-none fw-medium">Login</Link>
-                                </p>
+                                     Already have an account? <Link to="/login" className="text-primary text-decoration-none fw-medium">Login</Link>
+                                 </p>
                             </form>
+                            <hr className="my-4 border-secondary border-opacity-25" />
+                            <div className="text-center text-muted small">
+                                🛡️ Designed & Developed by <br />
+                                <strong className="text-primary">Sai Shiva Anantha</strong>
+                            </div>
                         </div>
                     </div>
                 </div>

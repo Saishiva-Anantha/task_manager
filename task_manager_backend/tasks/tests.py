@@ -32,7 +32,7 @@ class EmailVerificationTests(APITestCase):
         self.assertEqual(len(mail.outbox), 1)
         sent_email = mail.outbox[0]
         self.assertEqual(sent_email.to, ['testuser@example.com'])
-        self.assertIn('Verify your ZenTask account', sent_email.subject)
+        self.assertIn('Verify your Anantha Task Manager account', sent_email.subject)
 
         # 3. Extract the verification URL params (uid and token) from the email body
         # Email body contains: ... verify-email?uid=<uid>&token=<token>

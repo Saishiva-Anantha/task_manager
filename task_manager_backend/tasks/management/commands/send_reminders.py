@@ -28,8 +28,8 @@ class Command(BaseCommand):
                 try:
                     send_mail(
                         subject=f'Reminder: Task "{task.title}" is due soon!',
-                        message=f'Hi {user.username},\n\nThis is a friendly reminder that your task "{task.title}" is due on {task.due_date}.\n\nPlease log in to ZenTask to complete it!\n\nBest,\nZenTask Team',
-                        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@zentask.com'),
+                        message=f'Hi {user.username},\n\nThis is a friendly reminder that your task "{task.title}" is due on {task.due_date}.\n\nPlease log in to Anantha Task Manager to complete it!\n\nBest,\nAnantha Task Manager Team',
+                        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ananthataskmanager.com'),
                         recipient_list=[user.email],
                         fail_silently=False,
                     )

@@ -66,6 +66,11 @@ function VerifyEmail() {
                                     <Link to="/login" className="text-muted text-decoration-none small">Go to Login</Link>
                                 </>
                             )}
+                            <hr className="my-4 border-secondary border-opacity-25" />
+                            <div className="text-center text-muted small">
+                                🛡️ Designed & Developed by <br />
+                                <strong className="text-primary">Sai Shiva Anantha</strong>
+                            </div>
                         </div>
                     </div>
                 </div>

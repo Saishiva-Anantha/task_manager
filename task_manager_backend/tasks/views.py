@@ -143,7 +143,7 @@ class RegisterView(generics.CreateAPIView):
         verify_url = f"{settings.FRONTEND_URL}/verify-email?uid={uid}&token={token}"
 
         send_mail(
-            'Verify your ZenTask account',
+            'Verify your Anantha Task Manager account',
             f'Hi {user.username},\n\nPlease click the link below to verify your email address:\n{verify_url}',
             settings.DEFAULT_FROM_EMAIL,
             [user.email],
@@ -408,7 +408,7 @@ class AITaskSummaryView(APIView):
         top_category = cat_stats[0]['category__name'] if cat_stats.exists() else "None"
         
         prompt = (
-            f"Summarize user's week on ZenTask. "
+            f"Summarize user's week on Anantha Task Manager. "
             f"Stats: {completed} tasks completed out of {total} total. "
             f"Top Category: '{top_category}'. "
             f"Pending High Priority Tasks: {high_priority}. "
