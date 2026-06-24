@@ -60,6 +60,7 @@ from django.conf import settings
 
 class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         username = request.data.get('username')
@@ -87,7 +88,7 @@ class RegisterView(generics.CreateAPIView):
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        verify_url = f"http://localhost:5174/verify-email?uid={uid}&token={token}"
+        verify_url = f"{settings.FRONTEND_URL}/verify-email?uid={uid}&token={token}"
 
         send_mail(
             'Verify your ZenTask account',
@@ -104,6 +105,7 @@ class RegisterView(generics.CreateAPIView):
 
 class VerifyEmailView(APIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         uidb64 = request.data.get('uid')
