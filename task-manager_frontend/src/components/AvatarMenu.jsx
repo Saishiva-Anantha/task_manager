@@ -39,6 +39,8 @@ function AvatarMenu({ username }) {
   const handleLogout = () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    localStorage.removeItem('username')
+    localStorage.removeItem('avatar_img')
     navigate('/login')
   }
 

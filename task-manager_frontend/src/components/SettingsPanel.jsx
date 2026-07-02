@@ -53,7 +53,7 @@ function SettingsPanel({ onClose }) {
             <h4 className="fw-bold mb-0">⚙️ Settings</h4>
             <p className="text-muted small mb-0">Customize your Anantha Task Manager experience</p>
           </div>
-          <button className="btn-close" onClick={onClose} style={{ filter: mode === 'dark' ? 'invert(1)' : 'none' }}></button>
+          <button className="btn-close" onClick={onClose}></button>
         </div>
 
         {/* Tabs */}
@@ -68,7 +68,7 @@ function SettingsPanel({ onClose }) {
               className="btn rounded-pill px-4"
               style={{
                 background: activeTab === tab.id ? 'var(--primary)' : 'transparent',
-                color: activeTab === tab.id ? '#fff' : 'var(--text-color)',
+                color: activeTab === tab.id ? 'var(--primary-text)' : 'var(--text-color)',
                 border: `1px solid ${activeTab === tab.id ? 'var(--primary)' : 'var(--card-border)'}`,
                 fontWeight: 600,
                 transition: 'all 0.2s'

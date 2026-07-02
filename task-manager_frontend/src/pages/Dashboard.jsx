@@ -215,7 +215,6 @@ function Dashboard({ setUsername }) {
         total: tasks.length,
         completed: tasks.filter(t => t.completed).length,
         pending: tasks.filter(t => !t.completed).length,
-        inProgress: tasks.filter(t => !t.completed && t.status === 'in_progress').length,
         highPriority: tasks.filter(t => !t.completed && t.priority === 'high').length
     }
 
@@ -249,7 +248,6 @@ function Dashboard({ setUsername }) {
                                 onClick={() => {
                                     setActiveTab(tab.id)
                                     setError('')
-                                    setSuccess && setSuccess('')
                                 }}
                                 style={{ transition: 'all 0.2s' }}>
                                 {tab.label}
@@ -315,10 +313,9 @@ function Dashboard({ setUsername }) {
                     <div className="row mb-4">
                         {[
                             { id: 'all',          label: 'Total Tasks',   value: stats.total,        color: 'var(--primary)' },
-                            { id: 'completed',    label: 'Completed',     value: stats.completed,    color: '#10b981' },
-                            { id: 'pending',      label: 'Pending',       value: stats.pending,      color: '#f59e0b' },
-                            { id: 'in_progress',  label: 'In Progress',   value: stats.inProgress,   color: '#f59e0b' },
-                            { id: 'high',         label: 'High Priority', value: stats.highPriority, color: '#ef4444' },
+                            { id: 'completed',    label: 'Completed',     value: stats.completed,    color: 'var(--success)' },
+                            { id: 'pending',      label: 'Pending',       value: stats.pending,      color: 'var(--warning)' },
+                            { id: 'high',         label: 'High Priority', value: stats.highPriority, color: 'var(--danger)' },
                         ].map(s => {
                             const isActive = activeTile === s.id
                             return (
@@ -330,7 +327,6 @@ function Dashboard({ setUsername }) {
                                             if (s.id === 'all')         { setFilterStatus('all');       setFilterCategory('all') }
                                             else if (s.id === 'completed')  setFilterStatus('completed')
                                             else if (s.id === 'pending')    setFilterStatus('pending')
-                                            else if (s.id === 'in_progress')setFilterStatus('pending')
                                             else if (s.id === 'high')   { setFilterStatus('pending');   setFilterCategory('all') }
                                         }}
                                         style={{

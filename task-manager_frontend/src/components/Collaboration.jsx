@@ -284,7 +284,7 @@ function Collaboration({ onTaskCreated }) {
                             {projectTasks.length > 0 ? (
                                 <div className="d-flex flex-column gap-2">
                                     {projectTasks.map(task => (
-                                        <div key={task.id} className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                        <div key={task.id} className="d-flex justify-content-between align-items-center p-3 rounded" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--card-border)' }}>
                                             <div className="d-flex align-items-center gap-3">
                                                 <input 
                                                     type="checkbox" 
@@ -293,7 +293,7 @@ function Collaboration({ onTaskCreated }) {
                                                     onChange={() => handleToggleTaskCompleted(task)} 
                                                 />
                                                 <div>
-                                                    <span className={`fw-semibold text-white small ${task.completed ? 'text-decoration-line-through opacity-50' : ''}`}>
+                                                    <span className={`fw-semibold small ${task.completed ? 'text-decoration-line-through opacity-50' : ''}`} style={{ color: 'var(--text-color)' }}>
                                                         {task.title}
                                                     </span>
                                                     <div className="d-flex align-items-center gap-2 mt-1">

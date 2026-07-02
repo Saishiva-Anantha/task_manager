@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-function VoiceCreator({ onTaskCreated, categories, projects }) {
+function VoiceCreator({ onTaskCreated }) {
     const [isListening, setIsListening] = useState(false)
     const [transcription, setTranscription] = useState('')
     const [recognition, setRecognition] = useState(null)

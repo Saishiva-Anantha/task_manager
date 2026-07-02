@@ -46,8 +46,13 @@ function applyTheme(themeId, mode, customColorHex, customGradientType) {
   root.style.setProperty('--blob2', colors.blob2)
 
   // Text
-  root.style.setProperty('--text-color', mode === 'dark' ? '#f1f5f9' : '#0f172a')
-  root.style.setProperty('--text-muted', mode === 'dark' ? '#94a3b8' : '#64748b')
+  const textColor = mode === 'dark' ? '#f1f5f9' : '#0f172a'
+  const textMuted = mode === 'dark' ? '#94a3b8' : '#64748b'
+  root.style.setProperty('--text-color', textColor)
+  root.style.setProperty('--text-muted', textMuted)
+  
+  // Close button filter (so btn-close is visible in both modes)
+  root.style.setProperty('--btn-close-filter', mode === 'dark' ? 'invert(1)' : 'none')
 }
 
 function ThemeProvider({ children }) {

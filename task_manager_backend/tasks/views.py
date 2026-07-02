@@ -1,15 +1,25 @@
 
-from rest_framework import generics
-# Create your views here.
-from .models import Task, Category
-from .serializers import TaskSerializer, CategorySerializer
+import os
+import json
+import urllib.request
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.auth.models import User
-from rest_framework import generics, permissions
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.views import APIView
-from django.db.models import Q
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.db.models import Q, Count
 from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+from rest_framework import generics, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import Task, Category, Project, ActivityLog
+from .serializers import TaskSerializer, CategorySerializer, ProjectSerializer, ActivityLogSerializer
 
 class UserProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -104,11 +114,6 @@ class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Category.objects.filter(user=self.request.user)
     
-from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth.tokens import default_token_generator
-from django.conf import settings
 
 class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
@@ -180,15 +185,6 @@ class VerifyEmailView(APIView):
             return Response({'error': 'Invalid verification link.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from .models import Project, ActivityLog
-from .serializers import ProjectSerializer, ActivityLogSerializer
-from datetime import timedelta
-from django.db.models import Count
-import urllib.request
-import json
-import os
 
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
@@ -427,4 +423,4 @@ class AllUsersView(APIView):
     def get(self, request):
         users = User.objects.all().values('id', 'username', 'email')
         return Response(users)
-        
+        
